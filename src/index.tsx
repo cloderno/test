@@ -9,7 +9,6 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <Modal />
     <Table />
   </React.StrictMode>
 );

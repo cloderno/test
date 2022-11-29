@@ -1,12 +1,8 @@
 import React, { FC, useState, useEffect } from 'react'
-import {Form, Input, InputNumber, Popconfirm, Table as AntTable, Typography} from 'antd'
+import {Button, Form, Input, InputNumber, Popconfirm, Table as AntTable, Typography} from 'antd'
 import { LocalStorageService } from '../../services/service';
-
-const service = new LocalStorageService();
-
-service.setLocalStorageData();
-
-let originData: any[] | (() => any[]) = service.getLocalStorageData();
+import { IProduct } from '../../interfaces';
+import Modal from './Modal'
 
 const EditableCell = ({
   editing,
@@ -44,50 +40,62 @@ const EditableCell = ({
 };
 
 const Table: FC = () => {
-  const [form] = Form.useForm();
-  const [data, setData] = useState(originData);
-  const [editingid, setEditingid] = useState('');
-  const isEditing = (record: { id: string; }) => record.id === editingid;
+  const service = new LocalStorageService();
+  const [form] = Form.useForm<IProduct>();
+  const [data, setData] = useState();
+  const [editingid, setEditingid] = useState<number>();
+  const [open, setOpen] = useState(false);
+  const isEditing = (record: { id: number; }) => record.id === editingid;
 
+  // Первый запуск, добавляем записи в хранилище и обновляем стейт
   useEffect(() => {
-    service.updateLocalStorageData(data);
+    service.setLocalStorageData();
+
+    setData(service.getLocalStorageData());
+  }, [])
+
+  // Каждое изменение стейта
+  useEffect(() => {
+    setData(service.getLocalStorageData());
   }, [data])
 
-  const edit = (record: { id: React.SetStateAction<string>; }) => {
+  const edit = (record: { id: number; }) => {
     form.setFieldsValue({
       title: '',
       description: '',
-      price: null,
+      price: undefined,
+      stock: undefined,
       ...record,
     });
     setEditingid(record.id);
   };
+
   const cancel = () => {
-    setEditingid('');
+    setEditingid(undefined);
   };
 
-  const save = async (id: any) => {
-    try {
-      const row = await form.validateFields();
-      const newData = [...data];
-      const index = newData.findIndex((item) => id === item.id);
-      if (index > -1) {
-        const item = newData[index];
-        newData.splice(index, 1, {
-          ...item,
-          ...row,
-        });
-        setData(newData);
-        setEditingid('');
-      } else {
-        newData.push(row);
-        setData(newData);
-        setEditingid('');
-      }
-    } catch (errInfo) {
-      console.log('Validate Failed:', errInfo);
-    }
+  const remove = (record: { id: number; }) => {
+    service.removeFromLocalStorage(record.id);
+  }
+
+  const save = () => {
+    const currentObject: IProduct[] = [{
+      id: editingid!,
+      title: form.getFieldValue('title'),
+      description: form.getFieldValue('description'),
+      price: parseInt(form.getFieldValue('price')),
+      stock: parseInt(form.getFieldValue('stock'))
+    }]
+
+    service.updateLocalStorageData(currentObject);
+    service.getLocalStorageData()
+    setEditingid(undefined)
   };
+
+  const onCreate = () => {
+    setOpen(false);
+  };
+
   const columns = [
     {
       title: 'id',
@@ -114,14 +122,20 @@ const Table: FC = () => {
       editable: true,
     },
     {
+      title: 'stock',
+      dataIndex: 'stock',
+      width: '20%',
+      editable: true,
+    },
+    {
       title: 'operation',
       dataIndex: 'operation',
-      render: (_: any, record: { id: any; }) => {
+      render: (_: any, record: { id: number; }) => {
         const editable = isEditing(record);
         return editable ? (
           <span>
             <Typography.Link
-              onClick={() => save(record.id)}
+              onClick={() => save()}
               style={{
                 marginRight: 8,
               }}
@@ -133,10 +147,17 @@ const Table: FC = () => {
             </Popconfirm>
           </span>
         ) : (
-          <Typography.Link disabled={editingid !== ''} onClick={() => edit(record)}>
-            Edit
-          </Typography.Link>
+          <>
+            <Typography.Link disabled={editingid !== undefined} onClick={() => edit(record)}>
+              Edit
+            </Typography.Link>
+            <br></br>
+            <Typography.Link onClick={() => remove(record)}>
+              Remove
+            </Typography.Link>
+          </>
         );
+
       },
     },
   ];
@@ -146,7 +167,7 @@ const Table: FC = () => {
     }
     return {
       ...col,
-      onCell: (record: { id: string; }) => ({
+      onCell: (record: { id: number; }) => ({
         record,
         inputType: col.dataIndex,
         dataIndex: col.dataIndex,
@@ -157,22 +178,43 @@ const Table: FC = () => {
   });
 
   return (
-    <Form form={form} component={false}>
-      <AntTable
-        components={{
-          body: {
-            cell: EditableCell,
-          },
+    <>
+      <Form form={form} component={false}>
+        {
+          data ? 
+          <AntTable
+            components={{
+              body: {
+                cell: EditableCell,
+              },
+            }}
+            bordered
+            dataSource={data}
+            columns={mergedColumns}
+            rowClassName="editable-row"
+            pagination={{
+              onChange: cancel,
+            }}
+          />
+          :
+          <p> loading.. </p>
+        }
+      </Form>
+      <Button
+        type="primary"
+        onClick={() => {
+          setOpen(true);
         }}
-        bordered
-        dataSource={data}
-        columns={mergedColumns}
-        rowClassName="editable-row"
-        pagination={{
-          onChange: cancel,
-        }}
-      />
-    </Form>
+      >
+        New Collection
+      </Button>
+      <Modal
+            open={open}
+            onCreate={onCreate}
+            onCancel={() => {
+              setOpen(false);
+      }}/>
+    </>
   )
 }
 
