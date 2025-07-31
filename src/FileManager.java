@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 public class FileManager {
     private final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
@@ -24,8 +26,6 @@ public class FileManager {
     public FileManager(TypedStorage storage, ArgsProcessor argsProcessor) {
         this.storage = storage;
         this.argsProcessor = argsProcessor;
-
-        processFile();
     }
 
     public void processFile() {
@@ -43,23 +43,23 @@ public class FileManager {
                 System.err.format("IOException: %s%n", x);
                 System.err.format("File not found");
             }
-
-            write();
         }
+
+        write();
     }
 
     private void write() {
         String strings = DataFormatter.format(storage.getStrings());
-        this.insert(strings, FILENAME_STRING);
+        this.createAndPopulate(strings, FILENAME_STRING);
 
         String integers = DataFormatter.format(storage.getIntegers());
-        this.insert(integers, FILENAME_INTEGER);
+        this.createAndPopulate(integers, FILENAME_INTEGER);
 
         String doubles = DataFormatter.format(storage.getDoubles());
-        this.insert(doubles, FILENAME_DOUBLE);
+        this.createAndPopulate(doubles, FILENAME_DOUBLE);
     }
 
-    private void insert(String content, String filename) {
+    private void createAndPopulate(String content, String filename) {
         if (content == null || content.isBlank()) return;
 
         String baseDir = PathManager.getRootDir().toString();
@@ -75,15 +75,19 @@ public class FileManager {
         String fullFilename = argsProcessor.getFilePrefix() + filename;
         Path outputPath = Path.of(directory, fullFilename);
 
-        try (BufferedWriter writer = Files.newBufferedWriter(outputPath, DEFAULT_CHARSET)) {
+
+        // options check
+        OpenOption[] options = argsProcessor.isAppendOption()
+                ? new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.APPEND }
+                : new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING };
+
+        try (BufferedWriter writer = Files.newBufferedWriter(outputPath, DEFAULT_CHARSET, options)) {
+            if (argsProcessor.isAppendOption()) {
+                writer.newLine();
+            }
             writer.write(content, 0, content.length());
         } catch (IOException x) {
             System.err.format("IOException while writing to %s: %s%n", outputPath, x.getMessage());
         }
-    }
-
-    public static boolean isValidFilePrefix(String filename) {
-        String pattern = "^[A-Za-z0-9_-]+$";
-        return filename.matches(pattern);
     }
 }

@@ -1,4 +1,5 @@
 import helpers.PathManager;
+import helpers.Validator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -8,6 +9,7 @@ public class ArgsProcessor {
 
     private boolean summaryShort = false;
     private boolean summaryFull = false;
+    private boolean appendOption = false;
     private String filePath = "";
     private String filePrefix = "";
     private Set<String> inputFiles = new HashSet<>(); //input/input1.txt
@@ -27,6 +29,9 @@ public class ArgsProcessor {
                 case "-f":
                     summaryFull = true;
                     continue;
+                case "-a":
+                    appendOption = true;
+                    continue;
                 case "-o":
                     if (!validateFilePath(args[++i])) break;
                     continue;
@@ -41,14 +46,14 @@ public class ArgsProcessor {
     }
 
     private void addInputFiles(String filename) {
-        if (filename.endsWith(".txt")) {
+        if (Validator.isTxtFile(filename)) {
             var filePath = PathManager.getRootDir() + "/src/" + filename;
             inputFiles.add(filePath);
         }
     }
 
     private boolean validateFilePath(String path) {
-        if (PathManager.isValidPathString(path)) {
+        if (Validator.isValidPathString(path)) {
             this.filePath = path;
             return true;
         } else {
@@ -59,7 +64,7 @@ public class ArgsProcessor {
     }
 
     private boolean validateFilePrefix(String prefix) {
-        if (FileManager.isValidFilePrefix(prefix)) {
+        if (Validator.isValidFilePrefix(prefix)) {
             this.filePrefix = prefix;
             return true;
         } else {
@@ -88,5 +93,9 @@ public class ArgsProcessor {
 
     public boolean isSummaryShort() {
         return summaryShort;
+    }
+
+    public boolean isAppendOption() {
+        return appendOption;
     }
 }

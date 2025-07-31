@@ -6,10 +6,13 @@ public class Main {
         ArgsProcessor argsProcessor = new ArgsProcessor(args);
 
         FileManager fileManager = new FileManager(storage, argsProcessor);
+        fileManager.processFile();
 
         if (argsProcessor.isSummaryShort()) {
             storage.displayShort();
         }
-//        fileManager.processFile();
+        if (argsProcessor.isSummaryFull()) {
+            storage.displayFull();
+        }
     }
 }
