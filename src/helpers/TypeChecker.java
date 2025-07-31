@@ -1,3 +1,5 @@
+package helpers;
+
 public class TypeChecker {
     public static Object parse(String input) {
         input = input.trim();
