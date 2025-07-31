@@ -1,0 +1,7 @@
+-3.0
+text
+999
+0
+another string
+-5.5
+test123
