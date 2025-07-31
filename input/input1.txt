@@ -1,8 +1,8 @@
-42
-hello
-3.14
-world
--7
-0.001
-Java
-100
+Lorem ipsum dolor sit amet
+45
+Пример
+3.1415
+consectetur adipiscing
+-0.001
+тестовое задание
+100500
