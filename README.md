@@ -14,6 +14,7 @@
 
 ## Краткое описание файлов
 <img width="264" height="444" alt="image" src="https://github.com/user-attachments/assets/3dcadbd0-3eda-40e1-8ef8-5c5ac8207166" />
+
  - PathManager: Utility класс, который содержит в себе метод для получения Root директории
  - TypedStorage: Класс предназначеный для хранения данных по их типу в HashSet. Datatype HashSet был выбран для того, чтобы в файлы не записывались дубликаты. Также класс позволяет выводить статистику, по множеству.
  - StorageStatistics: Utility класс, который занимается арифметическими операциями, а также выводом данных по статистике (Full, Short).
