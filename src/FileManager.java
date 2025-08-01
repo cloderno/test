@@ -95,7 +95,7 @@ public class FileManager {
                 : new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING };
 
         try (BufferedWriter writer = Files.newBufferedWriter(outputPath, DEFAULT_CHARSET, options)) {
-            if (argsProcessor.isAppendOption()) {
+            if (argsProcessor.isAppendOption() && Files.exists(outputPath) && Files.size(outputPath) > 0) {
                 writer.newLine();
             }
             writer.write(content, 0, content.length());
