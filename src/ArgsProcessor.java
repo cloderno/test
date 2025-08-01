@@ -4,6 +4,9 @@ import helpers.Validator;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Класс занимающийся обработкой аргументов из CLI
+ */
 public class ArgsProcessor {
     private final String[] args;
 
@@ -20,6 +23,9 @@ public class ArgsProcessor {
         processArgs();
     }
 
+    /**
+     * Метод проверяет аргументы, находит в них опции и манипулирует полями
+     */
     public void processArgs() {
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
@@ -45,6 +51,12 @@ public class ArgsProcessor {
         }
     }
 
+    /**
+     * Добавляет входной файл в inputFiles, если файл имеет расширение .txt.
+     * Путь строится относительно директории /src/.
+     *
+     * @param filename имя входного файла (например, input/input1.txt)
+     */
     private void addInputFiles(String filename) {
         if (Validator.isTxtFile(filename)) {
             var filePath = PathManager.getRootDir() + "/src/" + filename;
@@ -52,6 +64,13 @@ public class ArgsProcessor {
         }
     }
 
+    /**
+     * Валидирует путь, переданный в аргументе -o.
+     * Путь должен начинаться и заканчиваться слешем, например: /example1/
+     *
+     * @param path путь указанный пользователем
+     * @return true, если путь валиден, иначе false
+     */
     private boolean validateFilePath(String path) {
         if (Validator.isValidPathString(path)) {
             this.filePath = path;
@@ -63,6 +82,13 @@ public class ArgsProcessor {
         }
     }
 
+    /**
+     * Валидирует префикс имени файла, переданный в аргументе -p.
+     * Разрешены только латинские буквы, цифры, символы '-' и '_'.
+     *
+     * @param prefix префикс имени файла
+     * @return true, если префикс валиден, иначе false
+     */
     private boolean validateFilePrefix(String prefix) {
         if (Validator.isValidFilePrefix(prefix)) {
             this.filePrefix = prefix;

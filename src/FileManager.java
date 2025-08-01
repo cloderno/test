@@ -1,4 +1,4 @@
-import helpers.DataFormatter;
+import helpers.StringFormatter;
 import helpers.PathManager;
 import helpers.TypeChecker;
 
@@ -14,8 +14,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 public class FileManager {
+    // Стандартная кодировка для чтения/записи файлов
     private final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
+    // Названия выходных файлов по типам данных
     private final String FILENAME_INTEGER = "integers.txt";
     private final String FILENAME_STRING = "strings.txt";
     private final String FILENAME_DOUBLE = "doubles.txt";
@@ -28,6 +30,9 @@ public class FileManager {
         this.argsProcessor = argsProcessor;
     }
 
+    /**
+     * Обрабатывает входные файлы, проверяет тип данных и записывает в каждую из множеств
+     */
     public void processFile() {
         var inputFiles = argsProcessor.getInputFiles();
 
@@ -48,41 +53,49 @@ public class FileManager {
         write();
     }
 
+    /**
+     * Записывает строки, целые числа и дробные числа в отдельные файлы, используя форматированный вывод и префиксы имен
+     */
     private void write() {
-        String strings = DataFormatter.format(storage.getStrings());
+        String strings = StringFormatter.format(storage.getStrings());
         this.createAndPopulate(strings, FILENAME_STRING);
 
-        String integers = DataFormatter.format(storage.getIntegers());
+        String integers = StringFormatter.format(storage.getIntegers());
         this.createAndPopulate(integers, FILENAME_INTEGER);
 
-        String doubles = DataFormatter.format(storage.getDoubles());
+        String doubles = StringFormatter.format(storage.getDoubles());
         this.createAndPopulate(doubles, FILENAME_DOUBLE);
     }
 
+    /**
+     * Создает файл с заданным содержимым и именем
+     * Учитывает путь (из опции -o), режим append (-a) и префикс файла (-p)
+     * @param content  Содержимое
+     * @param filename Имя файла без префикса
+     */
     private void createAndPopulate(String content, String filename) {
         if (content == null || content.isBlank()) return;
 
-        String baseDir = PathManager.getRootDir().toString();
-        String subDir = argsProcessor.getFilePath();
-        String directory = subDir.isEmpty() ? baseDir + "/output/" : baseDir + "/" + subDir;
+        String baseDir = PathManager.getRootDir().toString(); // главная директория
+        String subDir = argsProcessor.getFilePath(); // дополнительная директория полученная из опции
+        String directory = subDir.isEmpty() ? baseDir + "/output/" : baseDir + "/" + subDir; // дефолтная или subdir
 
-        // directory check
+        // Проверка путей, на содержание папок
         File outputDir = new File(directory);
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
 
-        String fullFilename = argsProcessor.getFilePrefix() + filename;
-        Path outputPath = Path.of(directory, fullFilename);
+        String fullFilename = argsProcessor.getFilePrefix() + filename; // префикс + файл
+        Path outputPath = Path.of(directory, fullFilename); // окончательная директория + имя файла
 
-
-        // options check
+        // Проверка опций
         OpenOption[] options = argsProcessor.isAppendOption()
                 ? new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.APPEND }
                 : new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING };
 
         try (BufferedWriter writer = Files.newBufferedWriter(outputPath, DEFAULT_CHARSET, options)) {
-            if (argsProcessor.isAppendOption()) {
+            if (argsProcessor.isAppendOption() && Files.exists(outputPath)) {
                 writer.newLine();
             }
             writer.write(content, 0, content.length());

@@ -9,10 +9,10 @@ public class Main {
         fileManager.processFile();
 
         if (argsProcessor.isSummaryShort()) {
-            storage.displayShort();
+            storage.displayShortStats();
         }
         if (argsProcessor.isSummaryFull()) {
-            storage.displayFull();
+            storage.displayFullStats();
         }
     }
 }
