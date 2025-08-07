@@ -31,19 +31,19 @@ public class ArgsProcessor {
             switch (args[i]) {
                 case "-s":
                     summaryShort = true;
-                    continue;
+                    break;
                 case "-f":
                     summaryFull = true;
-                    continue;
+                    break;
                 case "-a":
                     appendOption = true;
-                    continue;
+                    break;
                 case "-o":
                     if (!validateFilePath(args[++i])) break;
-                    continue;
+                    break;
                 case "-p":
                     if (!validateFilePrefix(args[++i])) break;
-                    continue;
+                    break;
                 default:
                     addInputFiles(args[i]);
                     break;
